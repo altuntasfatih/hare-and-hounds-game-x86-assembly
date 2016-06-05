@@ -1,0 +1,1969 @@
+Microsoft (R) Macro Assembler Version 6.15.8803		    06/05/16 13:01:56
+Program Template     (template.asm)			     Page 1 - 1
+
+
+				TITLE Program Template     (template.asm)
+
+				; Program Description:
+				; Author:
+				; Date Created:
+				; Last Modification Date:
+
+				INCLUDE Irvine32.inc
+			      C ; Include file for Irvine32.lib             (Irvine32.inc)
+			      C 
+			      C INCLUDE SmallWin.inc		; MS-Windows prototypes, structures, and constants
+			      C .NOLIST
+			      C .LIST
+			      C 
+			      C .NOLIST
+			      C .LIST
+			      C 
+					
+
+				; (insert symbol definitions here)
+				emptyMap PROTO
+				putNodes PROTO
+				moveCursor PROTO,X:BYTE, Y:BYTE
+				write_Node PROTO,X:BYTE, Y:BYTE,T:BYTE,Point:PTR DWORD
+				PlayHore PROTO,Aim:byte;
+				PlayWolf PROTO,Aim:word;
+				CheckInput PROTO,Input:PTR DWORD,Tip:BYTE;
+				CheckFinish PROTO;
+				ClearScreen PROTO;
+				ComputerWolfCalculate PROTO,T:BYTE,Axis:BYTE
+
+
+
+ 00000000			.data
+				;186║
+				;185╣
+				;201╔
+				;200╚
+				;204╠
+				;187╗
+				;188╝
+				;205═
+				;203╦
+				;202╩
+				;201,205,187,0;╔═╗
+				;186,' ',186,0;║ ║
+				;200,205,188,0;╚═╝
+				;185,' ',204,0;╣ ╠
+				;201,202,187,0;╔╩╗
+				;200,203,188,0;╚╦╝
+				;186,' ',204,0;║ ╠
+				;185,' ',186,0;╣ ║
+				;205,205,205,0;═══
+				;186,0;║
+
+ 00000000 09 20 20 20 20	str0 BYTE  '	    A    	  B    	      C    	    D      	  E ',10
+	   41 20 20 20 20
+	   09 20 20 42 20
+	   20 20 20 09 20
+	   20 20 20 20 20
+	   43 20 20 20 20
+	   09 20 20 20 20
+	   44 20 20 20 20
+	   20 20 09 20 20
+	   45 20 0A
+ 00000030 20 09 20 20 20	str1 BYTE  ' 	                            ',10
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   0A
+ 0000004F 09 20 20 20 20	str2 BYTE  '	               ',201,205,205,205,205,205,187,'      ',201,205,205,205,205,205,187,'      ',201,205,205,205,205,205,187,'      ',10
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 C9 CD CD CD
+	   CD CD BB 20 20
+	   20 20 20 20 C9
+	   CD CD CD CD CD
+	   BB 20 20 20 20
+	   20 20 C9 CD CD
+	   CD CD CD BB 20
+	   20 20 20 20 20
+	   0A
+ 00000087 31 09 20 20 20	str3 BYTE  '1	               ',186,'     ',204,205,205,205,205,205,205,185,'     ',204,205,205,205,205,205,205,185,'     ',186,'      ',10
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 20 BA 20 20
+	   20 20 20 CC CD
+	   CD CD CD CD CD
+	   B9 20 20 20 20
+	   20 CC CD CD CD
+	   CD CD CD B9 20
+	   20 20 20 20 BA
+	   20 20 20 20 20
+	   20 0A
+ 000000C0 09 20 20 20 20	str4 BYTE  '	               ',200,205,205,203,205,205,188,'      ',200,205,205,203,205,205,188,'      ',200,205,205,203,205,205,188,'      ',10
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 C8 CD CD CB
+	   CD CD BC 20 20
+	   20 20 20 20 C8
+	   CD CD CB CD CD
+	   BC 20 20 20 20
+	   20 20 C8 CD CD
+	   CB CD CD BC 20
+	   20 20 20 20 20
+	   0A
+ 000000F8 09 20 20 20 20	str5 BYTE  '	             /    ',186,'    \       ',186,'       /    ',186,'    \     ',10
+	   20 20 20 20 20
+	   20 20 20 20 2F
+	   20 20 20 20 BA
+	   20 20 20 20 5C
+	   20 20 20 20 20
+	   20 20 BA 20 20
+	   20 20 20 20 20
+	   2F 20 20 20 20
+	   BA 20 20 20 20
+	   5C 20 20 20 20
+	   20 0A
+ 00000131 09 20 20 20 20	str6 BYTE  '	            /     ',186,'     \      ',186,'      /     ',186,'     \    ',10
+	   20 20 20 20 20
+	   20 20 20 2F 20
+	   20 20 20 20 BA
+	   20 20 20 20 20
+	   5C 20 20 20 20
+	   20 20 BA 20 20
+	   20 20 20 20 2F
+	   20 20 20 20 20
+	   BA 20 20 20 20
+	   20 5C 20 20 20
+	   20 0A
+ 0000016A 09 20 20 20 20	str7 BYTE  '	           /      ',186,'      \     ',186,'     /      ',186,'      \   ',10
+	   20 20 20 20 20
+	   20 20 2F 20 20
+	   20 20 20 20 BA
+	   20 20 20 20 20
+	   20 5C 20 20 20
+	   20 20 BA 20 20
+	   20 20 20 2F 20
+	   20 20 20 20 20
+	   BA 20 20 20 20
+	   20 20 5C 20 20
+	   20 0A
+ 000001A3 09 20 20 20 20	str71 BYTE '	          /       ',186,'       \    ',186,'    /       ',186,'       \   ',10
+	   20 20 20 20 20
+	   20 2F 20 20 20
+	   20 20 20 20 BA
+	   20 20 20 20 20
+	   20 20 5C 20 20
+	   20 20 BA 20 20
+	   20 20 2F 20 20
+	   20 20 20 20 20
+	   BA 20 20 20 20
+	   20 20 20 5C 20
+	   20 20 0A
+ 000001DD 09 20 20 C9 CD	str8 BYTE  '	  ',201,205,205,205,205,205,187,'      ',201,205,205,202,205,205,187,'      ',201,205,205,202,205,205,187,'      ',201,205,205,202,205,205,187,'      ',201,205,205,205,205,205,187,10
+	   CD CD CD CD BB
+	   20 20 20 20 20
+	   20 C9 CD CD CA
+	   CD CD BB 20 20
+	   20 20 20 20 C9
+	   CD CD CA CD CD
+	   BB 20 20 20 20
+	   20 20 C9 CD CD
+	   CA CD CD BB 20
+	   20 20 20 20 20
+	   C9 CD CD CD CD
+	   CD BB 0A
+ 0000021C 32 09 20 20 BA	str9 BYTE  '2	  ',186,' 2A  ',204,205,205,205,205,205,205,185,' 2B  ',204,205,205,205,205,205,205,185,'  2C ',204,205,205,205,205,205,205,185,' 2D  ',204,205,205,205,205,205,205,185,' 2E  ',186,10
+	   20 32 41 20 20
+	   CC CD CD CD CD
+	   CD CD B9 20 32
+	   42 20 20 CC CD
+	   CD CD CD CD CD
+	   B9 20 20 32 43
+	   20 CC CD CD CD
+	   CD CD CD B9 20
+	   32 44 20 20 CC
+	   CD CD CD CD CD
+	   CD B9 20 32 45
+	   20 20 BA 0A
+ 0000025C 09 20 20 C8 CD	str10 BYTE '	  ',200,205,205,205,205,205,188,'      ',200,205,205,203,205,205,188,'      ',200,205,205,203,205,205,188,'      ',200,205,205,203,205,205,188,'      ',200,205,205,205,205,205,188,10
+	   CD CD CD CD BC
+	   20 20 20 20 20
+	   20 C8 CD CD CB
+	   CD CD BC 20 20
+	   20 20 20 20 C8
+	   CD CD CB CD CD
+	   BC 20 20 20 20
+	   20 20 C8 CD CD
+	   CB CD CD BC 20
+	   20 20 20 20 20
+	   C8 CD CD CD CD
+	   CD BC 0A
+ 0000029B 09 20 20 20 20	str11 BYTE '	          \       ',186,'       /    ',186,'    \       ',186,'       /   ',10
+	   20 20 20 20 20
+	   20 5C 20 20 20
+	   20 20 20 20 BA
+	   20 20 20 20 20
+	   20 20 2F 20 20
+	   20 20 BA 20 20
+	   20 20 5C 20 20
+	   20 20 20 20 20
+	   BA 20 20 20 20
+	   20 20 20 2F 20
+	   20 20 0A
+ 000002D5 09 20 20 20 20	str12 BYTE '	           \      ',186,'      /     ',186,'     \      ',186,'      /    ',10
+	   20 20 20 20 20
+	   20 20 5C 20 20
+	   20 20 20 20 BA
+	   20 20 20 20 20
+	   20 2F 20 20 20
+	   20 20 BA 20 20
+	   20 20 20 5C 20
+	   20 20 20 20 20
+	   BA 20 20 20 20
+	   20 20 2F 20 20
+	   20 20 0A
+ 0000030F 09 20 20 20 20	str13 BYTE '	            \     ',186,'     /      ',186,'      \     ',186,'     /     ',10
+	   20 20 20 20 20
+	   20 20 20 5C 20
+	   20 20 20 20 BA
+	   20 20 20 20 20
+	   2F 20 20 20 20
+	   20 20 BA 20 20
+	   20 20 20 20 5C
+	   20 20 20 20 20
+	   BA 20 20 20 20
+	   20 2F 20 20 20
+	   20 20 0A
+ 00000349 09 20 20 20 20	str132 BYTE'	             \    ',186,'    /       ',186,'       \    ',186,'    /      ',10
+	   20 20 20 20 20
+	   20 20 20 20 5C
+	   20 20 20 20 BA
+	   20 20 20 20 2F
+	   20 20 20 20 20
+	   20 20 BA 20 20
+	   20 20 20 20 20
+	   5C 20 20 20 20
+	   BA 20 20 20 20
+	   2F 20 20 20 20
+	   20 20 0A
+ 00000383 09 20 20 20 20	str14 BYTE '	               ',201,205,205,202,205,205,187,'      ',201,205,205,202,205,205,187,'      ',201,205,205,202,205,205,187,'      ',10
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 C9 CD CD CA
+	   CD CD BB 20 20
+	   20 20 20 20 C9
+	   CD CD CA CD CD
+	   BB 20 20 20 20
+	   20 20 C9 CD CD
+	   CA CD CD BB 20
+	   20 20 20 20 20
+	   0A
+ 000003BB 33 09 20 20 20	str15 BYTE '3	               ',186,'     ',204,205,205,205,205,205,205,185,'     ',204,205,205,205,205,205,205,185,'     ',186,'      ',10
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 20 BA 20 20
+	   20 20 20 CC CD
+	   CD CD CD CD CD
+	   B9 20 20 20 20
+	   20 CC CD CD CD
+	   CD CD CD B9 20
+	   20 20 20 20 BA
+	   20 20 20 20 20
+	   20 0A
+ 000003F4 09 20 20 20 20	str16 BYTE '	               ',200,205,205,205,205,205,188,'      ',200,205,205,205,205,205,188,'      ',200,205,205,205,205,205,188,'      ',0
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 C8 CD CD CD
+	   CD CD BC 20 20
+	   20 20 20 20 C8
+	   CD CD CD CD CD
+	   BC 20 20 20 20
+	   20 20 C8 CD CD
+	   CD CD CD BC 20
+	   20 20 20 20 20
+	   00
+ 0000042C 46 66 00		str17 BYTE 'Ff',0
+
+
+
+
+
+
+
+
+
+
+ 0000042F 20 57 31 20 00	W1 BYTE ' W1 ',0
+ 00000434 20 57 32 20 00	W2 BYTE ' W2 ',0
+ 00000439 20 57 33 20 00	W3 BYTE ' W3 ',0
+ 0000043E 20 20 48 20 20	H BYTE '  H  ',0
+	   00
+ 00000444 20 20 20 20 20	SPACE BYTE '     ',0
+	   00
+ 0000044A 03 18 FF B1		B1 BYTE 3,24,-1,0B1h;
+ 0000044E 03 25 00 C1		C1 BYTE 3,37,0,0C1h;
+ 00000452 03 32 00 D1		D1 BYTE 3,50,0,0D1h;
+
+
+ 00000456 0A 0B FE A2		A2 BYTE 10,11,-2,0A2h;
+ 0000045A 0A 18 00 B2		B2 BYTE 10,24,0,0B2h;
+ 0000045E 0A 25 00 C2		C2 BYTE 10,37,0,0C2h;
+ 00000462 0A 32 00 D2		D2 BYTE 10,50,0,0D2h;
+ 00000466 0A 3F 01 E2		E2 BYTE 10,63,1,0E2h;
+
+ 0000046A 11 18 FD B3		B3 BYTE 17,24,-3,0B3h;
+ 0000046E 11 25 00 C3		C3 BYTE 17,37,0,0C3h;
+ 00000472 11 32 00 D3		D3 BYTE 17,50,0,0D3h;
+
+ 00000476 00000000		Hp  DWORD 00000000h;
+ 0000047A 00000000		W1p DWORD 00000000h;
+ 0000047E 00000000		W2p DWORD 00000000h;
+ 00000482 00000000		W3p DWORD 00000000h;
+
+ 00000486 00			Eror byte 0;
+
+ 00000487 65 6E 74 65 72	msgH byte "enter next move of Hare  (eg:d1)       : ",0
+	   20 6E 65 78 74
+	   20 6D 6F 76 65
+	   20 6F 66 20 48
+	   61 72 65 20 20
+	   28 65 67 3A 64
+	   31 29 20 20 20
+	   20 20 20 20 3A
+	   20 00
+ 000004B1 65 6E 74 65 72	msgW byte "enter next move of Hound (eg:1b2)         : ",0
+	   20 6E 65 78 74
+	   20 6D 6F 76 65
+	   20 6F 66 20 48
+	   6F 75 6E 64 20
+	   28 65 67 3A 31
+	   62 32 29 20 20
+	   20 20 20 20 20
+	   20 20 3A 20 00
+ 000004DE 59 6F 75 20 63	err1 byte "You can't go there  ",0
+	   61 6E 27 74 20
+	   67 6F 20 74 68
+	   65 72 65 20 20
+	   00
+ 000004F3 48 61 20 62 6F	okey byte "Ha boyle oyna            ",0
+	   79 6C 65 20 6F
+	   79 6E 61 20 20
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   00
+ 0000050D 0A 0A 09 09 09	succesH byte 10,10,"			Hare Win		  ",10,10,0
+	   48 61 72 65 20
+	   57 69 6E 09 09
+	   20 20 0A 0A 00
+ 00000521 0A 0A 09 09 09	succesW byte 10,10,"			Hound  Win		  ",10,10,0
+	   48 6F 75 6E 64
+	   20 20 57 69 6E
+	   09 09 20 20 0A
+	   0A 00
+ 00000537 54 61 72 67 65	err2 byte "Target plasce is full  ",0
+	   74 20 70 6C 61
+	   73 63 65 20 69
+	   73 20 66 75 6C
+	   6C 20 20 00
+ 0000054F 20 54 68 65 72	err3 byte " There is no path      ",0
+	   65 20 69 73 20
+	   6E 6F 20 70 61
+	   74 68 20 20 20
+	   20 20 20 00
+ 00000567 54 68 65 72 65	err4 byte "There is no place in map        ",0
+	   20 69 73 20 6E
+	   6F 20 70 6C 61
+	   63 65 20 69 6E
+	   20 6D 61 70 20
+	   20 20 20 20 20
+	   20 20 00
+ 00000588 50 6C 65 61 73	err5 byte "Please Choose correct Wolf1                  ",0
+	   65 20 43 68 6F
+	   6F 73 65 20 63
+	   6F 72 72 65 63
+	   74 20 57 6F 6C
+	   66 31 20 20 20
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   00
+ 000005B6 6E 6F 74 20 79	err6 byte "not yet                    ",0
+	   65 74 20 20 20
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 20 00
+
+
+ 000005D2 6D 6F 76 20 57	mov1 byte "mov Wolf1         ",0
+	   6F 6C 66 31 20
+	   20 20 20 20 20
+	   20 20 20 00
+ 000005E5 6D 6F 76 20 57	mov2 byte "mov Wolf2                   ",0
+	   6F 6C 66 32 20
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 20 20 00
+ 00000602 6D 6F 76 20 57	mov3 byte "mov Wolf3                  ",0
+	   6F 6C 66 33 20
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 20 00
+ 0000061E 6D 6F 76 20 48	mov4 byte "mov Hare                 ",0
+	   61 72 65 20 20
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   00
+
+
+
+
+ 00000638 63 6F 6E 74 69	check byte "continue                   ",0
+	   6E 75 65 20 20
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 20 00
+ 00000654 48 6F 75 6E 64	start byte "Hound or  Hare ?(type for hound 1,otherwise 0)  :",0
+	   20 6F 72 20 20
+	   48 61 72 65 20
+	   3F 28 74 79 70
+	   65 20 66 6F 72
+	   20 68 6F 75 6E
+	   64 20 31 2C 6F
+	   74 68 65 72 77
+	   69 73 65 20 30
+	   29 20 20 3A 00
+ 00000686 09 09 09 09 09	Spa byte "																																										                  ",10,0
+	   09 09 09 09 09
+	   09 09 09 09 09
+	   09 09 09 09 09
+	   09 09 09 09 09
+	   09 09 09 09 09
+	   09 09 09 09 09
+	   09 09 09 09 09
+	   09 09 20 20 20
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   20 20 20 20 20
+	   0A 00
+
+
+
+
+
+ 00000000			.code
+ 00000000			main PROC
+				Local inputH:BYTE
+				Local inputW:WORD
+ 00000006  C6 45 FF 00		mov inputH,0;
+ 0000000A  66| C7 45 FC		mov inputW,0;
+	   0000
+
+
+
+ 00000010  E8 00000000 E	call clrscr
+				INVOKE emptyMap
+ 0000001A  E8 00000000 E	call crlf;
+				INVOKE putNodes
+ 00000024  E8 00000000 E	call crlf;
+ 00000029  B8 0000000F		mov eax,white+(black*15);
+ 0000002E  E8 00000000 E	call setTextColor
+
+
+
+
+ 00000033  BA 00000654 R	mov edx,offset start
+ 00000038  E8 00000000 E	call writeString;
+ 0000003D  E8 00000000 E	call readInt;
+				;call dumpregs
+ 00000042  3C 01		cmp al,1
+ 00000044  0F 85 00000106	jne GameLooopHare
+
+ 0000004A			GameLooopHound:
+
+
+					
+					INVOKE CheckFinish;
+
+ 0000004F  B8 0000000F			mov eax,white+(black*15);
+ 00000054  E8 00000000 E		call setTextColor
+ 00000059  C6 45 FF 00			mov inputH,0;
+ 0000005D  66| C7 45 FC			mov inputW,0;
+	   0000
+ 00000063  C6 05 00000486 R		mov Eror,0;
+	   00
+
+					
+ 0000006A  E8 00000000 E	LW:	call crlf
+ 0000006F  B8 0000000F			mov eax,white+(black*15);
+ 00000074  E8 00000000 E		call setTextColor
+ 00000079  BA 000004B1 R		mov  edx,offset msgW;
+ 0000007E  E8 00000000 E		call writestring;
+					;call dumpregs
+ 00000083  E8 00000000 E		call readHex;
+					;call dumpregs
+ 00000088  66| 89 45 FC			mov inputW,ax;
+					INVOKE CheckInput,ADDR inputW,0
+ 00000097  B8 0000000F			mov eax,white+(black*15);
+ 0000009C  E8 00000000 E		call setTextColor
+					INVOKE PlayWolf,inputW
+					
+ 000000AD  80 3D 00000486 R		cmp Eror,1
+	   01
+ 000000B4  74 B4			je LW
+ 000000B6  E8 00000000 E		call clrscr
+ 000000BB  E8 0000068F			call ClearScreen;
+ 000000C0  E8 00000000 E		call clrscr
+
+ 000000C5  B8 0000000F			mov eax,white+(black*15);
+ 000000CA  E8 00000000 E		call setTextColor
+					INVOKE emptyMap
+ 000000D4  E8 00000000 E		call crlf;
+ 000000D9  B8 0000000F			mov eax,white+(black*15);
+ 000000DE  E8 00000000 E		call setTextColor
+					INVOKE putNodes
+ 000000E8  E8 00000000 E		call crlf;
+ 000000ED  C6 05 00000486 R		mov Eror,0;
+	   00
+ 000000F4  B8 00000000			mov eax,0;	
+					INVOKE CheckFinish;
+					
+
+ 000000FE  E8 000008D5			call ComputerHareplay
+					
+
+ 00000103  E8 00000000 E		call clrscr
+ 00000108  E8 00000642			call ClearScreen;
+ 0000010D  E8 00000000 E		call clrscr
+					;INVOKE ClearScreen;
+ 00000112  B8 0000000F			mov eax,white+(black*15);
+ 00000117  E8 00000000 E		call setTextColor
+					INVOKE emptyMap
+ 00000121  E8 00000000 E		call crlf;
+ 00000126  B8 0000000F			mov eax,white+(black*15);
+ 0000012B  E8 00000000 E		call setTextColor
+					INVOKE putNodes
+ 00000135  E8 00000000 E		call crlf;
+ 0000013A  C6 05 00000486 R		mov Eror,0;
+	   00
+ 00000141  B8 00000000			mov eax,0;	
+					INVOKE CheckFinish;
+					
+ 0000014B  E9 FFFFFEFA			jmp GameLooopHound;
+					
+					
+ 00000150			GameLooopHare:
+
+
+
+
+
+ 00000150  B8 0000000F			mov eax,white+(black*15);
+ 00000155  E8 00000000 E		call setTextColor
+					INVOKE CheckFinish;
+ 0000015F  E8 00000697			call ComputerWolf;
+
+ 00000164  C6 45 FF 00			mov inputH,0;
+ 00000168  66| C7 45 FC			mov inputW,0;
+	   0000
+ 0000016E  C6 05 00000486 R		mov Eror,0;
+	   00
+
+					;mov eax,0;	
+					;INVOKE CheckFinish;
+					;call readHex;
+ 00000175  E8 000005D5			call ClearScreen;
+ 0000017A  E8 00000000 E		call clrscr
+					;INVOKE ClearScreen;
+ 0000017F  B8 0000000F			mov eax,white+(black*15);
+ 00000184  E8 00000000 E		call setTextColor
+					INVOKE emptyMap
+ 0000018E  E8 00000000 E		call crlf;
+ 00000193  B8 0000000F			mov eax,white+(black*15);
+ 00000198  E8 00000000 E		call setTextColor
+					INVOKE putNodes
+ 000001A2  E8 00000000 E		call crlf;
+ 000001A7  C6 05 00000486 R		mov Eror,0;
+	   00
+ 000001AE  B8 00000000			mov eax,0;	
+					INVOKE CheckFinish;
+					
+					
+ 000001B8			LH:	
+ 000001B8  E8 00000000 E		call crlf;
+ 000001BD  B8 0000000F			mov eax,white+(black*15);
+ 000001C2  E8 00000000 E		call setTextColor
+ 000001C7  BA 00000487 R		mov  edx,offset msgH;
+ 000001CC  E8 00000000 E		call writestring;
+ 000001D1  E8 00000000 E		call readHex;
+ 000001D6  88 45 FF			mov inputH,al;
+					INVOKE CheckInput,ADDR inputH,1
+					
+					INVOKE PlayHore,inputH
+ 000001ED  80 3D 00000486 R		cmp Eror,1
+	   01
+ 000001F4  74 C2			je LH
+ 000001F6  E8 00000554			call ClearScreen;
+ 000001FB  E8 00000000 E		call clrscr
+					;INVOKE ClearScreen;
+ 00000200  B8 0000000F			mov eax,white+(black*15);
+ 00000205  E8 00000000 E		call setTextColor
+					INVOKE emptyMap
+ 0000020F  E8 00000000 E		call crlf;
+ 00000214  B8 0000000F			mov eax,white+(black*15);
+ 00000219  E8 00000000 E		call setTextColor
+					INVOKE putNodes
+ 00000223  E8 00000000 E		call crlf;
+					
+					
+
+					
+
+ 00000228  E9 FFFFFF23			jmp GameLooopHare;
+
+ 0000022D			Ex:
+					exit	; exit to operating system
+ 00000234			main ENDP
+
+				; (insert additional procedures here)
+
+ 00000234			emptyMap PROC
+ 00000234  BA 00000000 R	mov edx,OFFSET str0
+
+ 00000239  E8 00000000 E	call writeString
+
+ 0000023E  E8 00000000 E	call crlf
+
+ 00000243  C3			ret
+ 00000244			emptyMap ENDP
+
+ 00000244			moveCursor PROC,
+					X:BYTE, Y:BYTE
+ 00000247  8A 55 0C			mov dl,Y
+ 0000024A  8A 75 08			mov dh,X
+ 0000024D  E8 00000000 E		call Gotoxy
+					ret
+ 00000256			moveCursor ENDP
+
+
+ 00000256			putNodes PROC,
+					
+ 00000256  E8 00000000 E		call crlf
+ 0000025B  BA 00000000			mov edx,0;
+ 00000260  B9 0000000B			mov ecx,11;
+					
+ 00000265				L1:
+					
+ 00000265  B8 00000000				mov eax,00000000h;
+					
+ 0000026A  52					push edx
+						INVOKE write_Node,B1[edx],B1[edx+1],B1[edx+2],ADDR B1[edx]
+ 0000028C  5A					pop edx
+ 0000028D  B8 00000000				mov eax,0;
+						
+ 00000292  E8 00000000 E			call crlf;
+ 00000297  83 C2 04				add edx,4;
+ 0000029A  E2 C9				loop L1;
+ 0000029C  C3				ret
+ 0000029D			putNodes ENDP
+
+ 0000029D			write_Node PROC,
+					X:BYTE, Y:BYTE,T:BYTE,Point:ptr DWORD
+ 000002A0  8A 55 0C			mov dl,Y
+ 000002A3  8A 75 08			mov dh,X
+ 000002A6  E8 00000000 E		call Gotoxy
+					
+ 000002AB  80 7D 10 00			cmp T,00000000h
+ 000002AF  7C 35			jl Wolfs;
+ 000002B1  80 7D 10 00			cmp T,00000000h
+ 000002B5  75 0E			jne Hoore
+ 000002B7  BA 00000444 R		mov edx,OFFSET SPACE;
+ 000002BC  E8 00000000 E	    call writeString
+					ret
+					
+ 000002C5			Hoore:	
+ 000002C5  B8 0000000A			mov eax,lightGreen+(black*15);
+ 000002CA  E8 00000000 E		call setTextColor
+ 000002CF  BA 0000043E R		mov edx,OFFSET H;
+ 000002D4  E8 00000000 E	    call writeString
+					;call crlf
+ 000002D9  8B 75 14			mov esi, Point;
+ 000002DC  89 35 00000476 R		mov HP,esi;
+					
+					ret
+
+ 000002E6			Wolfs:
+ 000002E6  F6 5D 10			neg T;
+ 000002E9  FE 4D 10			dec T
+ 000002EC  B8 00000000			mov eax,0
+ 000002F1  8A 45 10			mov al,T;
+ 000002F4  B3 05			mov bl,5;
+ 000002F6  F6 EB			imul bl
+					
+ 000002F8  BB 00000000			mov ebx,0;
+ 000002FD  BB 0000042F R		mov ebx,OFFSET W1;
+ 00000302  66| 03 D8			add bx,ax;
+ 00000305  8B D3		    mov edx,ebx;
+ 00000307  B8 00000004			mov eax,red+(black*15);
+ 0000030C  E8 00000000 E		call setTextColor
+ 00000311  E8 00000000 E	    call writeString;
+					
+					
+ 00000316  80 7D 10 00			cmp T,0
+ 0000031A  75 0D			jne EL_2
+ 0000031C  8B 75 14			mov esi,Point;
+ 0000031F  89 35 0000047A R		mov W1p,esi;
+					ret
+ 00000329			EL_2:
+ 00000329  80 7D 10 01			cmp T,1
+ 0000032D  75 0D			jne EL_3
+ 0000032F  8B 75 14			mov esi,Point;
+ 00000332  89 35 0000047E R		mov W2p,esi;
+					ret
+ 0000033C			EL_3:
+ 0000033C  8B 75 14			 mov esi,Point;
+ 0000033F  89 35 00000482 R		 mov W3p,esi;
+					   
+					ret 
+ 00000349			write_Node ENDP
+
+ 00000349			PlayHore PROC,
+					I:BYTE;target aim that is wanted to going
+					Local move:BYTE,differenceH:BYTE,differenceW:BYTE;
+ 0000034F  C6 45 FE 00			mov differenceH,0;
+ 00000353  C6 45 FD 00			mov differenceW,0;
+
+					
+ 00000357  8B 35 00000476 R		mov esi,HP;
+ 0000035D  8A 5E 03			mov bl,byte ptr[esi+3];
+
+					
+ 00000360  80 FB D2						cmp     bl, 0D2h
+ 00000363  74 0F						je      secondIf
+ 00000365  80 FB C1						cmp     bl, 0C1h
+ 00000368  74 0A						je      secondIf
+ 0000036A  80 FB C3						cmp     bl, 0C3h
+ 0000036D  74 05						je      secondIf
+ 0000036F  80 FB B2		                cmp     bl, 0B2h
+ 00000372  75 3B		                jne     Continue
+
+ 00000374			 SecondIf:                            
+ 00000374  80 7D 08 D2		                 cmp     I, 0D2h
+ 00000378  74 12		                 je      WhenTrue
+ 0000037A  80 7D 08 C1		                 cmp     I, 0C1h
+ 0000037E  74 0C		                 je      WhenTrue
+ 00000380  80 7D 08 C3		                 cmp     I, 0C3h
+ 00000384  74 06		                 je      WhenTrue
+ 00000386  80 7D 08 B2		                 cmp     I, 0B2h
+ 0000038A  75 23		                 jne     Continue
+
+ 0000038C			 WhenTrue:                             
+ 0000038C  BA 0000054F R	                 mov     edx, offset err3 ; " bak orda yol mu var      "
+ 00000391  E8 00000000 E	                 call    WriteString
+ 00000396  B0 07		                 mov     al, 7
+ 00000398  E8 00000000 E	                 call    WriteChar
+ 0000039D  B0 07		                 mov     al, 7
+ 0000039F  E8 00000000 E	                 call    WriteChar
+ 000003A4  C6 05 00000486 R	                 mov     Eror, 1
+	   01
+				                 ret
+
+ 000003AF			 Continue:                            
+				                                         
+ 000003AF  BA 00000000			mov edx,0;
+ 000003B4  B9 0000000B			mov ecx,11;number of nodes
+ 000003B9			Find:;finding node which that users wats go it,
+ 000003B9  0F B6 82			movzx eax,B1[edx+3];
+	   0000044D R
+					;call writeInt;
+ 000003C0  8A 45 08			mov al,I;
+
+					
+ 000003C3  38 82 0000044D R			cmp    B1[edx+3], al
+ 000003C9  75 0B				jne El_PartW
+ 000003CB  80 BA 0000044C R			cmp    B1[edx+2],00h
+	   00
+ 000003D2  75 02				jne El_PartW
+ 000003D4  EB 53				jmp CheckPath1;//finded it,then check is  going possible?
+ 000003D6			El_PartW:
+ 000003D6  38 82 0000044D R			cmp    B1[edx+3],al
+ 000003DC  75 23				jne L
+					
+ 000003DE  BA 00000537 R			mov edx,OFFSET err2
+ 000003E3  E8 00000000 E			call writeString
+ 000003E8  C6 05 00000486 R			mov Eror,1;
+	   01
+ 000003EF  B0 07				mov AL, 07h
+ 000003F1  E8 00000000 E			call    WriteChar;
+ 000003F6  B0 07				mov AL, 07h
+ 000003F8  E8 00000000 E			call    WriteChar;
+						ret
+					
+ 00000401  83 C2 04		L:	add edx,4;
+ 00000404  E2 B3			loop Find;
+ 00000406  BA 00000567 R		mov edx,OFFSET err4
+ 0000040B  E8 00000000 E		call writeString
+ 00000410  C6 05 00000486 R		mov Eror,1
+	   01
+ 00000417  B0 07			mov AL, 07h
+ 00000419  E8 00000000 E		call    WriteChar;
+ 0000041E  B0 07			mov AL, 07h
+ 00000420  E8 00000000 E		call    WriteChar;
+					ret
+					
+
+ 00000429			CheckPath1:
+ 00000429  BB 00000000			mov ebx,0;
+					;call dumpregs;
+ 0000042E  8A 9A 0000044A R		mov bl,B1[edx];x position
+					;call dumpregs;
+ 00000434  8B 35 00000476 R		mov esi,HP;
+					
+ 0000043A  2A 1E			sub bl,byte ptr[esi];bl store x differeces
+ 0000043C  88 5D FE			mov differenceH,bl;
+					;call dumpregs;
+					
+					
+ 0000043F  8A 9A 0000044B R		mov bl,B1[edx+1];W position
+ 00000445  52				push edx;
+					;call dumpregs;
+ 00000446  8B 35 00000476 R		mov esi,HP;
+ 0000044C  2A 5E 01			sub bl,byte ptr[esi+1]
+					;call dumpregs;
+ 0000044F  88 5D FD			mov differenceW,bl;
+					
+					
+					
+					
+					
+					
+ 00000452  80 7D FE 07				cmp     differenceH, 07h
+ 00000456  74 2F				je      CheckPath2
+ 00000458  80 7D FE F9				cmp     differenceH, 0f9h
+ 0000045C  74 29				je      CheckPath2
+ 0000045E  80 7D FE 00				cmp     differenceH, 00h
+ 00000462  74 23				je      CheckPath2
+						
+ 00000464  BA 000004DE R	        mov edx,OFFSET err1
+ 00000469  E8 00000000 E			call writeString
+						;call crlf
+ 0000046E  C6 05 00000486 R			mov Eror,1;
+	   01
+ 00000475  B0 07				mov AL, 07h
+ 00000477  E8 00000000 E			call    WriteChar;
+ 0000047C  B0 07				mov AL, 07h
+ 0000047E  E8 00000000 E			call    WriteChar;
+						ret;
+					
+					
+ 00000487			CheckPath2:
+
+
+					
+ 00000487  80 7D FD 0D				cmp     differenceW, 0dh
+ 0000048B  74 2F				je      whenPossible
+ 0000048D  80 7D FD F3				cmp     differenceW, 0F3h
+ 00000491  74 29				je      whenPossible
+ 00000493  80 7D FD 00				cmp     differenceW, 00h
+ 00000497  74 23				je      whenPossible
+						
+ 00000499  BA 000004DE R			mov edx,OFFSET err1
+ 0000049E  E8 00000000 E			call writeString
+ 000004A3  C6 05 00000486 R			mov Eror,1;
+	   01
+ 000004AA  B0 07				mov AL, 07h
+ 000004AC  E8 00000000 E			call    WriteChar;			;This block not possible
+ 000004B1  B0 07				mov AL, 07h
+ 000004B3  E8 00000000 E			call    WriteChar;
+						;call crlf
+						ret
+
+
+ 000004BC			whenPossible:
+ 000004BC  BA 000004F3 R			mov edx,OFFSET okey
+ 000004C1  E8 00000000 E			call writeString
+ 000004C6  C6 05 00000486 R			mov Eror,0;
+	   00
+
+ 000004CD  8B 35 00000476 R			mov esi,HP;
+						;call dumpregs;
+ 000004D3  C6 46 02 00				mov byte ptr [esi+2],0;
+						;call dumpregs;
+ 000004D7  5A					pop edx;
+ 000004D8  C6 82 0000044C R			mov B1[edx+2],1
+	   01
+						;call dumpregs;	
+						;call crlf
+
+					ret
+
+ 000004E3			PlayHore ENDP
+
+
+ 000004E3			PlayWolf PROC,
+					Aim:word;target aim that is wanted to going
+					;I:BYTE;target aim that is wanted to going
+					Local I:BYTE ,differenceH:BYTE,differenceW:BYTE,temp:BYTE,Pointer:Dword
+ 000004E9  C6 45 FE 00			mov differenceH,0;
+ 000004ED  C6 45 FD 00			mov differenceW,0;
+ 000004F1  C6 45 FC 00			mov temp,0;
+					
+					
+ 000004F5  B8 00000000			mov eax,0;
+ 000004FA  8A 65 09			mov ah,byte ptr aim[1];
+ 000004FD  88 65 FC			mov temp,ah;
+ 00000500  8A 45 08			mov al,byte ptr aim[0];
+ 00000503  88 45 FF			MOV I,al;
+					
+ 00000506  80 FC 01			cmp ah,1
+ 00000509  75 0B			jne second_if
+ 0000050B  8B 35 0000047A R		mov esi,W1p;
+ 00000511  89 75 F8			mov Pointer,esi;
+ 00000514  EB 43			jmp nextW
+ 00000516			second_if:	
+ 00000516  80 FC 02			cmp ah,2
+ 00000519  75 0B			jne third_if
+ 0000051B  8B 35 0000047E R		mov esi,W2p;
+ 00000521  89 75 F8			mov Pointer,esi;
+ 00000524  EB 33			jmp nextW
+ 00000526			third_if:
+					
+ 00000526  80 FC 03			cmp ah,3
+ 00000529  75 0B			jne L_ELSE
+ 0000052B  8B 35 00000482 R		mov esi,W3p;
+ 00000531  89 75 F8			mov Pointer,esi;
+ 00000534  EB 23			jmp nextW
+
+ 00000536			L_ELSE:	
+ 00000536  BA 00000588 R		mov edx,OFFSET err5
+ 0000053B  E8 00000000 E		call writeString
+ 00000540  C6 05 00000486 R		mov Eror,1;
+	   01
+ 00000547  B0 07			mov AL, 07h
+ 00000549  E8 00000000 E		call    WriteChar;
+ 0000054E  B0 07			mov AL, 07h
+ 00000550  E8 00000000 E		call    WriteChar;
+					RET;
+					
+ 00000559			nextW:
+					
+					
+ 00000559  8B 75 F8			mov esi,Pointer;
+ 0000055C  8A 5E 03			mov bl,byte ptr[esi+3];
+ 0000055F  80 FB D2						cmp     bl, 0D2h
+ 00000562  74 0F						je      SecondIfW
+ 00000564  80 FB C1						cmp     bl, 0C1h
+ 00000567  74 0A						je      SecondIfW
+ 00000569  80 FB C3						cmp     bl, 0C3h
+ 0000056C  74 05						je      SecondIfW
+ 0000056E  80 FB B2		                cmp     bl, 0B2h
+ 00000571  75 3B		                jne     Continue2
+
+ 00000573			 SecondIfW:                            
+ 00000573  80 7D FF D2		                 cmp     I, 0D2h
+ 00000577  74 12		                 je      WhenTrueW
+ 00000579  80 7D FF C1		                 cmp     I, 0C1h
+ 0000057D  74 0C		                 je      WhenTrueW
+ 0000057F  80 7D FF C3		                 cmp     I, 0C3h
+ 00000583  74 06		                 je      WhenTruew
+ 00000585  80 7D FF B2		                 cmp     I, 0B2h
+ 00000589  75 23		                 jne     Continue2
+
+ 0000058B			 WhenTrueW:                             
+ 0000058B  BA 0000054F R	                 mov     edx, offset err3 ; " bak orda yol mu var      "
+ 00000590  E8 00000000 E	                 call    WriteString
+ 00000595  B0 07		                 mov AL, 07h
+ 00000597  E8 00000000 E					 call    WriteChar;
+ 0000059C  B0 07						 mov AL, 07h
+ 0000059E  E8 00000000 E					 call    WriteChar;
+ 000005A3  C6 05 00000486 R	                 mov     Eror, 1
+	   01
+				                 ret
+
+ 000005AE			 Continue2:       
+					
+					
+ 000005AE  BA 00000000			mov edx,0;
+ 000005B3  B9 0000000B			mov ecx,11;number of nodes
+ 000005B8			Find:;finding node which that users wats go it,
+ 000005B8  0F B6 82			movzx eax,B1[edx+3];
+	   0000044D R
+					;call writeInt;
+ 000005BF  8A 45 FF			mov al,I;
+
+					
+ 000005C2  38 82 0000044D R			cmp    B1[edx+3], al
+ 000005C8  75 0B				jne El_PartW
+ 000005CA  80 BA 0000044C R			cmp    B1[edx+2],00h
+	   00
+ 000005D1  75 02				jne El_PartW
+ 000005D3  EB 53				jmp CheckPath1;//finded it,then check is  going possible?
+ 000005D5			El_PartW:
+ 000005D5  38 82 0000044D R			cmp    B1[edx+3],al
+ 000005DB  75 23				jne L
+					
+ 000005DD  BA 00000537 R			mov edx,OFFSET err2
+ 000005E2  E8 00000000 E			call writeString
+ 000005E7  C6 05 00000486 R			mov Eror,1;
+	   01
+ 000005EE  B0 07				mov AL, 07h
+ 000005F0  E8 00000000 E			call    WriteChar;
+ 000005F5  B0 07				mov AL, 07h
+ 000005F7  E8 00000000 E			call    WriteChar;
+						ret
+					
+ 00000600  83 C2 04		L:	add edx,4;
+ 00000603  E2 B3			loop Find;
+ 00000605  BA 00000567 R		mov edx,OFFSET err4
+ 0000060A  E8 00000000 E		call writeString
+ 0000060F  C6 05 00000486 R		mov Eror,1
+	   01
+ 00000616  B0 07			mov AL, 07h
+ 00000618  E8 00000000 E		call    WriteChar;
+ 0000061D  B0 07			mov AL, 07h
+ 0000061F  E8 00000000 E		call    WriteChar;
+					ret
+					
+
+
+ 00000628			CheckPath1:
+ 00000628  BB 00000000			mov ebx,0;
+					;call dumpregs;
+ 0000062D  8A 9A 0000044A R		mov bl,B1[edx];x position
+					;call dumpregs;
+ 00000633  8B 75 F8			mov esi,Pointer;
+					
+ 00000636  2A 1E			sub bl,byte ptr[esi];bl store x differeces
+ 00000638  88 5D FE			mov differenceH,bl;
+					;call dumpregs;
+					
+					
+ 0000063B  8A 9A 0000044B R		mov bl,B1[edx+1];W position
+ 00000641  52				push edx;
+					;call dumpregs;
+ 00000642  8B 75 F8			mov esi,Pointer;
+ 00000645  2A 5E 01			sub bl,byte ptr[esi+1]
+					;call dumpregs;
+ 00000648  88 5D FD			mov differenceW,bl;
+					
+					
+					
+					
+ 0000064B  80 7D FE 07				cmp     differenceH, 07h
+ 0000064F  74 2F				je      CheckPath2
+ 00000651  80 7D FE F9				cmp     differenceH, 0f9h
+ 00000655  74 29				je      CheckPath2
+ 00000657  80 7D FE 00				cmp     differenceH, 00h
+ 0000065B  74 23				je      CheckPath2
+						
+ 0000065D  BA 000004DE R	        mov edx,OFFSET err1
+ 00000662  E8 00000000 E			call writeString
+						;call crlf
+ 00000667  C6 05 00000486 R			mov Eror,1;
+	   01
+ 0000066E  B0 07				mov AL, 07h
+ 00000670  E8 00000000 E			call    WriteChar;
+ 00000675  B0 07				mov AL, 07h
+ 00000677  E8 00000000 E			call    WriteChar;
+						ret;
+					
+					
+					
+ 00000680			CheckPath2:
+
+
+ 00000680  80 7D FD 0D				cmp     differenceW, 0dh
+ 00000684  74 29				je      whenPossible
+ 00000686  80 7D FD 00				cmp     differenceW, 00h
+ 0000068A  74 23				je      whenPossible
+						
+ 0000068C  BA 000004DE R			mov edx,OFFSET err1
+ 00000691  E8 00000000 E			call writeString
+ 00000696  C6 05 00000486 R			mov Eror,1;
+	   01
+ 0000069D  B0 07				mov AL, 07h
+ 0000069F  E8 00000000 E			call    WriteChar;			;This block not possible
+ 000006A4  B0 07				mov AL, 07h
+ 000006A6  E8 00000000 E			call    WriteChar;
+						;call crlf
+						ret
+
+
+ 000006AF			whenPossible:
+ 000006AF  BA 000004F3 R			mov edx,OFFSET okey
+ 000006B4  E8 00000000 E			call writeString
+
+ 000006B9  8B 75 F8				mov esi,Pointer;
+						;call dumpregs;
+ 000006BC  C6 46 02 00				mov byte ptr [esi+2],0;
+						;call dumpregs;
+ 000006C0  F6 5D FC				neg temp;
+ 000006C3  5A					pop edx;
+ 000006C4  8A 5D FC				mov bl,temp;
+ 000006C7  88 9A 0000044C R			mov B1[edx+2],bl;
+ 000006CD  C6 05 00000486 R			mov Eror,0;
+	   00
+
+					ret
+ 000006D8			PlayWolf ENDP
+
+
+ 000006D8			CheckInput PROC,
+				Input:ptr DWORD, Tip:BYTE;
+ 000006DB  BA 00000638 R		mov  edx,offset check;
+ 000006E0  E8 00000000 E		call writestring;
+ 000006E5  80 7D 0C 01			cmp tip,1;hoore control
+ 000006E9  75 30			jne CheckWolf
+					
+ 000006EB  8B 75 08			mov esi ,Input;
+					;movsx ebx,byte ptr[esi]; 
+					;call dumpregs;
+ 000006EE  0F B6 06		    movzx eax,byte ptr[esi];:
+ 000006F1  BA 00000000		    mov  edx, 0;remainder 
+ 000006F6  BB 00000010		    mov ebx, 16; 
+ 000006FB  F7 FB		    idiv ebx   ;eax/ebx  quotient:eax remainder EDX
+					
+ 000006FD  80 FA 0A			cmp dl,10
+ 00000700  7D 04			jnl ConvertHoore; convert input
+					ret
+ 00000706			ConvertHoore:
+ 00000706  50				push eax;quotient
+ 00000707  B8 00000000			mov eax,0
+ 0000070C  8A C2			mov al,dl;
+ 0000070E  B3 10			mov bl,16;
+ 00000710  F6 EB		    imul bl;;eax*ebx sonuc gene eax
+					;call dumpregs;
+ 00000712  5B				pop ebx
+					;call dumpregs
+ 00000713  02 C3			add al,bl;
+					;call dumpregs
+ 00000715  88 06			mov byte ptr[esi],al
+					ret
+
+ 0000071B			CheckWolf:
+
+ 0000071B  8B 75 08			mov esi ,Input;
+					;movsx ebx,byte ptr[esi]; 
+					;call dumpregs;
+ 0000071E  0F B6 06		    movzx eax,byte ptr[esi];:
+ 00000721  BA 00000000		    mov  edx, 0;remainder 
+ 00000726  BB 00000010		    mov ebx, 16; 
+ 0000072B  F7 FB		    idiv ebx   ;eax/ebx  quotient:eax KALAN EDX A
+ 0000072D  80 FA 0A			cmp dl,10
+ 00000730  7D 04			jnl ConvertWolf; convert inputu
+					ret
+					
+ 00000736			ConvertWolf:
+ 00000736  50				push eax;quotient
+ 00000737  B8 00000000			mov eax,0
+ 0000073C  8A C2			mov al,dl;
+					
+ 0000073E  B3 10			mov bl,16;
+ 00000740  F6 EB		    imul bl;;eax*ebx sonuc gene eax
+					;call dumpregs;
+					
+ 00000742  5B				pop ebx
+					;call dumpregs
+ 00000743  02 C3			add al,bl;
+					;call dumpregs
+ 00000745  88 06			mov byte ptr[esi],al
+					ret
+
+				ret
+ 0000074F			CheckInput ENDP
+
+ 0000074F			ClearScreen Proc; PROC
+						;call clrscr
+ 0000074F  B2 14				mov dl,20
+ 00000751  B6 0E				mov dh,14
+ 00000753  E8 00000000 E			call Gotoxy
+ 00000758  B9 0000001E				mov ecx,30
+ 0000075D			L3:	
+ 0000075D  BA 00000686 R			mov edx,OFFSET Spa
+ 00000762  E8 00000000 E			call writeString
+ 00000767  E2 F4				loop l3
+						
+ 00000769  B2 14				mov dl,20
+ 0000076B  B6 0E				mov dh,14
+ 0000076D  E8 00000000 E			call Gotoxy
+						;call clrscr
+ 00000772  C3					ret
+ 00000773			ClearScreen  ENDP
+
+ 00000773			CheckFinish PROC
+
+ 00000773  B8 0000000F			mov eax,white+(black*15);
+ 00000778  E8 00000000 E		call setTextColor
+					
+ 0000077D  8B 35 00000476 R		mov esi,HP;
+ 00000783  8B 3D 0000047A R		mov edi,w1p;
+ 00000789  8A 46 01			mov al,byte ptr[esi+1]
+ 0000078C  8A 66 03			mov ah,byte ptr[esi+3]
+						
+ 0000078F  3A 47 01			cmp al,byte ptr[edi+1]
+ 00000792  7F 2D			jg Step2
+ 00000794  8B 3D 0000047E R		mov edi,w2p;
+ 0000079A  3A 47 01		    cmp al,byte ptr[edi+1]
+ 0000079D  7F 22			jg Step2
+ 0000079F  8B 3D 00000482 R		mov edi,w3p;
+ 000007A5  3A 47 01		    cmp al,byte ptr[edi+1]
+ 000007A8  7F 17			jg Step2
+ 000007AA  BA 0000050D R		mov edx,OFFSET succesH
+ 000007AF  E8 00000000 E		call writeString;
+ 000007B4  E8 00000000 E		call crlf
+					exit;
+ 000007C0  C3				ret
+
+ 000007C1			Step2:
+
+
+ 000007C1  80 FC E2			cmp ah,0e2h
+ 000007C4  75 34			jne  Quit
+ 000007C6  80 3D 00000454 R		cmp D1[2],0
+	   00
+ 000007CD  74 2B			je Quit
+ 000007CF  80 3D 00000464 R		cmp D2[2],0
+	   00
+ 000007D6  74 22			je Quit
+ 000007D8  80 3D 00000474 R		cmp D3[2],0
+	   00
+ 000007DF  74 19			je Quit
+ 000007E1  BA 00000521 R		mov edx,OFFSET succesW
+ 000007E6  E8 00000000 E		call writeString;
+ 000007EB  E8 00000000 E		call crlf
+ 000007F0  B0 01			mov al,1;
+					exit;
+ 000007F9  C3				ret
+					
+ 000007FA			Quit:	
+					
+					
+ 000007FA  C3			 ret
+ 000007FB			CheckFinish ENDP
+
+ 000007FB			ComputerWolf PROC
+				Local pivot:byte;
+
+ 00000801  C6 45 FF 00			mov pivot,0
+ 00000805  C6 45 FF 01			mov pivot,1;
+					
+ 00000809			TryAgain:
+ 00000809  8B 35 0000047A R		mov esi, w1p;
+ 0000080F  8B 3D 00000476 R		mov edi,Hp
+					
+ 00000815  8A 46 01			mov al,byte ptr [esi+1];w1
+ 00000818  8B 35 0000047E R		mov esi, w2p;
+ 0000081E  8A 66 01			mov ah,byte ptr [esi+1];w2
+ 00000821  8B 35 00000482 R		mov esi, w3p;
+ 00000827  8A 5E 01			mov bl,byte ptr [esi+1];w3
+ 0000082A  8A 7F 03			mov bh,byte ptr[edi +3]
+
+					
+ 0000082D  38 E0			CMP al,ah
+ 0000082F  7F 1C			jnle Se_W
+ 00000831  38 D8			CMP al,bl
+ 00000833  7F 18			jnle Se_W
+
+ 00000835  50				  push eax
+ 00000836  53				  push ebx
+					 INVOKE ComputerWolfCalculate,1,pivot ;move w1 next horizontally
+ 00000842  58				  pop eax
+ 00000843  5B				  pop ebx
+ 00000844  80 3D 00000486 R		  cmp Eror,0
+	   00
+ 0000084B  74 52			  je Clo;
+
+ 0000084D			Se_W: 
+
+					
+ 0000084D  38 C4			CMP ah,al
+ 0000084F  7F 1C			jnle ThirdW
+ 00000851  38 DC			CMP ah,bl
+ 00000853  7F 18			jnle ThirdW
+
+ 00000855  50				  push eax
+ 00000856  53				  push ebx
+					 INVOKE ComputerWolfCalculate,2,pivot;move w2 next horizontally
+ 00000862  5B				  pop ebx
+ 00000863  58				  pop eax
+ 00000864  80 3D 00000486 R		  cmp Eror,0
+	   00
+ 0000086B  74 32			  je Clo;
+					
+ 0000086D			ThirdW:
+
+ 0000086D  38 E3			CMP bl,ah
+ 0000086F  7F 21			jnle Devam
+ 00000871  38 C3			CMP bl,al
+ 00000873  7F 1D			jnle Devam
+
+					  
+ 00000875  50				  push eax
+ 00000876  53				  push ebx
+					  ;CALL crlf
+					 INVOKE ComputerWolfCalculate,3,pivot;move w3 next horizontally
+ 00000882  5B				  pop ebx
+ 00000883  58				  pop eax
+ 00000884  80 3D 00000486 R		  cmp Eror,0
+	   00
+ 0000088B  74 12			  je Clo;
+ 0000088D  E8 00000000 E		 CALL crlf
+					
+					 
+					
+ 00000892			Devam:
+ 00000892  E8 00000000 E		call crlf
+ 00000897  FE 4D FF			dec pivot;
+ 0000089A  E9 FFFFFF6A			jmp TryAgain
+
+ 0000089F			Clo:	
+					ret;
+					
+ 000008A1			ComputerWolf ENDP
+
+ 000008A1			ComputerWolfCalculate PROC,
+				T:BYTE,Axis:BYTE
+				Local Fin:BYTE;
+ 000008A7  C6 45 FF 00		MOV Fin,0;
+ 000008AB  C6 05 00000486 R	mov Eror,0;
+	   00
+					
+					
+ 000008B2  80 7D 08 01			cmp T,1
+ 000008B6  75 08			jne E_2
+ 000008B8  8B 35 0000047A R		mov esi,w1p;
+ 000008BE  EB 14			jmp NextStep
+ 000008C0			E_2:
+ 000008C0  80 7D 08 02			cmp T,2
+ 000008C4  75 08			jne E_3
+ 000008C6  8B 35 00000482 R		mov esi,w3p;
+ 000008CC  EB 06			jmp NextStep
+ 000008CE			E_3:
+ 000008CE  8B 35 00000482 R		 mov esi,w3p;
+					
+					
+ 000008D4			NextStep:
+
+					
+ 000008D4  B8 00000000			MOV EAX,0;
+ 000008D9  8A 65 0C			MOV ah,Axis;
+					
+ 000008DC  80 7D 0C 01			cmp Axis,1;
+ 000008E0  75 07			jne Ax0;
+ 000008E2  8A 46 01			mov al,byte ptr [esi+1]
+ 000008E5  04 0D			add al,13;
+ 000008E7  EB 41			jmp Fstep
+					 
+					 
+ 000008E9			Ax0:
+ 000008E9  80 7D 0C 00			cmp Axis,0;
+ 000008ED  75 1A			jne Ax01;
+ 000008EF  B9 0000000B			mov ecx,11;
+ 000008F4  BA 00000000			mov edx,0;
+ 000008F9  8A 06			mov al,byte ptr [esi]
+ 000008FB  8A 66 01			mov ah,byte ptr [esi+1]
+ 000008FE  04 07			add al,7;
+					 
+ 00000900  0F B6 5D 0C			movzx ebx,Axis;
+ 00000904  E9 00000087			jmp Find3
+					
+
+					 
+ 00000909			Ax01:
+ 00000909  80 7D 0C FF			cmp Axis,-1;
+ 0000090D  75 1B			jne Fstep;
+ 0000090F  B9 0000000B			mov ecx,11;
+ 00000914  BA 00000000			mov edx,0;
+ 00000919  8A 06			mov al,byte ptr [esi]
+ 0000091B  8A 66 01			mov ah,byte ptr [esi+1]
+ 0000091E  2C 07			sub al,7;
+ 00000920  C6 45 0C 00			mov Axis,0;
+ 00000924  0F B6 5D 0C			movzx ebx,Axis;
+ 00000928  EB 66			jmp Find3
+					
+
+ 0000092A			Fstep:
+ 0000092A  0F B6 5D 0C			 movzx ebx,Axis;
+
+ 0000092E  B9 0000000B			 mov ecx,11;
+ 00000933  BA 00000000			 mov edx,0;
+					 
+					 
+ 00000938			Find2:
+
+ 00000938  38 84 13			cmp  B1[edx+ebx],al
+	   0000044A R
+ 0000093F  75 39			jne Con
+ 00000941  80 BA 0000044C R		cmp  B1[edx+2],00h
+	   00
+ 00000948  75 30			jne Con
+					
+					
+ 0000094A  50				push eax
+ 0000094B  53				push ebx
+ 0000094C  52				push edx
+ 0000094D  B8 00000000			mov eax,0;
+ 00000952  8A 82 0000044D R		mov al,B1[edx+3]
+ 00000958  8A 65 08			mov ah,T
+					;call dumpregs;
+					INVOKE PlayWolf,ax
+ 00000965  5A				pop edx
+ 00000966  5B				pop ebx
+ 00000967  58				pop eax
+					
+ 00000968  80 3D 00000486 R		cmp Eror,1
+	   01
+ 0000096F  74 09			JE Con
+					
+ 00000971  C6 45 FF 01			mov Fin,1
+ 00000975  B9 00000001			mov ecx,1;
+					
+					
+					
+ 0000097A			Con:
+ 0000097A  83 C2 04			add edx,4;
+					 ;call dumpregs;
+ 0000097D  E2 B9			loop Find2;
+ 0000097F  80 7D FF 01			cmp Fin,1
+ 00000983  74 07			Je  q
+ 00000985  C6 05 00000486 R		mov Eror,1
+	   01
+ 0000098C			q:
+					ret
+					
+ 00000990			Find3:
+
+
+
+					;call dumpregs
+ 00000990  38 84 13			cmp  B1[edx+ebx],al
+	   0000044A R
+ 00000997  75 16			jne Don
+ 00000999  80 BA 0000044C R		cmp  B1[edx+2],00h
+	   00
+ 000009A0  75 0D			jne Don
+ 000009A2  38 A2 0000044B R		cmp  B1[edx+1],ah
+ 000009A8  75 05			jne Don
+ 000009AA  B9 00000001			mov ecx,1;
+						
+ 000009AF			Don:
+ 000009AF  83 C2 04			add edx,4;
+ 000009B2  E2 DC			loop Find3;	
+					
+					
+ 000009B4			Co:
+ 000009B4  83 EA 04			sub edx,4;
+					; call dumpregs;
+ 000009B7  B8 00000000			mov eax,0;
+ 000009BC  8A 82 0000044D R		mov al,B1[edx+3]
+ 000009C2  8A 65 08			mov ah,T
+					;call dumpregs;
+					INVOKE PlayWolf,ax
+ 000009CF  A0 00000486 R		mov al ,Eror
+					;call dumpregs;
+
+
+
+				ret
+ 000009D8			ComputerWolfCalculate ENDP
+
+
+ 000009D8			ComputerHareplay Proc
+				Local axe:byte
+				Local flag:BYTE
+ 000009DE  C6 45 FF 01		mov axe,1;
+ 000009E2  C6 45 FE 00		mov flag,0;
+
+
+ 000009E6			Try:
+
+					
+ 000009E6  8B 35 00000476 R		mov esi, Hp;
+ 000009EC  8A 06			mov al,byte ptr[esi];y
+ 000009EE  8A 66 01			mov ah,byte ptr[esi+1];x
+					
+ 000009F1  80 7D FF 01						cmp     axe, 1
+ 000009F5  75 05		                jne     IF_axe_2	;move -x
+ 000009F7  80 EC 0D		                sub     ah, 0Dh
+ 000009FA  EB 51		                jmp     Forward
+
+
+ 000009FC			 IF_axe_2:                            
+ 000009FC  80 7D FF 02		                 cmp     axe, 2
+ 00000A00  75 07		                 jne      IF_axe_3
+ 00000A02  80 EC 0D		                 sub     ah, 0Dh	;mov -x-y
+ 00000A05  2C 07		                 sub     al, 7
+ 00000A07  EB 44		                 jmp     Forward
+				 
+ 00000A09			 IF_axe_3:                          
+ 00000A09  80 7D FF 03		                 cmp     axe, 3
+ 00000A0D  75 07		                 jne      IF_axe_4
+ 00000A0F  80 EC 0D		                 sub     ah, 0Dh	;mov y-x
+ 00000A12  04 07		                 add     al, 7
+ 00000A14  EB 37		                 jmp     Forward
+
+
+ 00000A16			 IF_axe_4:                          
+ 00000A16  80 7D FF 04		                 cmp     axe, 4
+ 00000A1A  75 04		                jne     IF_axe_5
+ 00000A1C  2C 07		                 sub     al, 7	;move -y;
+ 00000A1E  EB 2D		                 jmp     Forward
+
+ 00000A20			 IF_axe_5:
+ 00000A20  80 7D FF 05		                 cmp     axe, 5
+ 00000A24  75 04		                 jne     IF_axe_6	;mov +y
+ 00000A26  04 07		                 add     al, 7
+ 00000A28  EB 23		                 jmp     Forward
+
+ 00000A2A			 IF_axe_6:                            
+ 00000A2A  80 7D FF 06		                 cmp     axe, 6
+ 00000A2E  75 05		                 jne      IF_axe_7	;mov +x
+ 00000A30  80 C4 0D		                 add     ah, 0Dh
+ 00000A33  EB 18		                 jmp     Forward
+
+ 00000A35			 IF_axe_7:                            
+ 00000A35  80 7D FF 07		                 cmp     axe, 7
+ 00000A39  75 07		                 jne     IF_axe_8
+ 00000A3B  80 C4 0D		                 add     ah, 0Dh	;mov +x-y
+ 00000A3E  2C 07		                 sub     al, 7
+ 00000A40  EB 0B		                 jmp     Forward
+
+ 00000A42			 IF_axe_8:                           
+ 00000A42  80 7D FF 08		                 cmp     axe, 8
+ 00000A46  75 05		                 jne     Forward
+ 00000A48  80 C4 0D		                 add     ah, 0Dh	;mov +x+y
+ 00000A4B  04 07		                 add     al, 7
+
+ 00000A4D			 Forward:                            
+					
+					
+ 00000A4D  B9 00000000			mov ecx,0;
+ 00000A52  8A 4D FF			mov cl,axe;
+					
+ 00000A55  BA 00000000			mov edx,0
+					
+
+ 00000A5A  B9 0000000B			mov ecx,11;
+ 00000A5F			FindH:
+					;call dumpregs
+ 00000A5F  38 82 0000044A R		cmp  B1[edx],al
+ 00000A65  75 1A			jne De
+ 00000A67  80 BA 0000044C R		cmp  B1[edx+2],00h
+	   00
+ 00000A6E  75 11			jne De
+ 00000A70  38 A2 0000044B R		cmp  B1[edx+1],ah
+ 00000A76  75 09			jne De
+ 00000A78  B9 00000001			mov ecx,1;
+ 00000A7D  C6 45 FE 01			mov flag,1
+					
+
+
+					
+ 00000A81			De:
+ 00000A81  83 C2 04			add edx,4;
+					;call dumpregs;
+ 00000A84  E2 D9			loop FindH;
+ 00000A86  80 7D FE 00			cmp flag,0
+ 00000A8A  74 1D			je T
+					
+ 00000A8C  83 EA 04			sub edx,4;
+ 00000A8F  B8 00000000			mov eax,0;
+ 00000A94  8A 82 0000044D R		mov al,B1[edx+3]
+					INVOKE PlayHore,al
+					
+ 00000AA0  80 3D 00000486 R		cmp Eror,0
+	   00
+ 00000AA7  74 08			Je  Bitir
+ 00000AA9  FE 45 FF		T:	inc axe;
+ 00000AAC  E9 FFFFFF35			jmp Try
+
+
+ 00000AB1			Bitir:
+
+					ret
+ 00000AB3			ComputerHareplay ENDP
+
+
+
+
+				END main
+Microsoft (R) Macro Assembler Version 6.15.8803		    06/05/16 13:01:56
+Program Template     (template.asm)			     Symbols 2 - 1
+
+
+
+
+Structures and Unions:
+
+                N a m e                  Size
+                                         Offset      Type
+
+CONSOLE_CURSOR_INFO  . . . . . .	 00000005
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+  bVisible . . . . . . . . . . .	 00000004	 Byte
+CONSOLE_SCREEN_BUFFER_INFO . . .	 00000016
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+  dwCursorPos  . . . . . . . . .	 00000004	 DWord
+  wAttributes  . . . . . . . . .	 00000008	 Word
+  srWindow . . . . . . . . . . .	 0000000A	 QWord
+  maxWinSize . . . . . . . . . .	 00000012	 DWord
+COORD  . . . . . . . . . . . . .	 00000004
+  X  . . . . . . . . . . . . . .	 00000000	 Word
+  Y  . . . . . . . . . . . . . .	 00000002	 Word
+FILETIME . . . . . . . . . . . .	 00000008
+  loDateTime . . . . . . . . . .	 00000000	 DWord
+  hiDateTime . . . . . . . . . .	 00000004	 DWord
+SMALL_RECT . . . . . . . . . . .	 00000008
+  Left . . . . . . . . . . . . .	 00000000	 Word
+  Top  . . . . . . . . . . . . .	 00000002	 Word
+  Right  . . . . . . . . . . . .	 00000004	 Word
+  Bottom . . . . . . . . . . . .	 00000006	 Word
+SYSTEMTIME . . . . . . . . . . .	 00000010
+  wYear  . . . . . . . . . . . .	 00000000	 Word
+  wMonth . . . . . . . . . . . .	 00000002	 Word
+  wDayOfWeek . . . . . . . . . .	 00000004	 Word
+  wDay . . . . . . . . . . . . .	 00000006	 Word
+  wHour  . . . . . . . . . . . .	 00000008	 Word
+  wMinute  . . . . . . . . . . .	 0000000A	 Word
+  wSecond  . . . . . . . . . . .	 0000000C	 Word
+  wMilliseconds  . . . . . . . .	 0000000E	 Word
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00001000 DWord	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 000006C4 DWord	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000AB3 DWord	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+CheckFinish  . . . . . . . . . .	P Near	 00000773 _TEXT	Length= 00000088 Public STDCALL
+  Step2  . . . . . . . . . . . .	L Near	 000007C1 _TEXT	
+  Quit . . . . . . . . . . . . .	L Near	 000007FA _TEXT	
+CheckInput . . . . . . . . . . .	P Near	 000006D8 _TEXT	Length= 00000077 Public STDCALL
+  Input  . . . . . . . . . . . .	DWord	 bp + 00000008
+  Tip  . . . . . . . . . . . . .	Byte	 bp + 0000000C
+  ConvertHoore . . . . . . . . .	L Near	 00000706 _TEXT	
+  CheckWolf  . . . . . . . . . .	L Near	 0000071B _TEXT	
+  ConvertWolf  . . . . . . . . .	L Near	 00000736 _TEXT	
+ClearScreen  . . . . . . . . . .	P Near	 0000074F _TEXT	Length= 00000024 Public STDCALL
+  L3 . . . . . . . . . . . . . .	L Near	 0000075D _TEXT	
+CloseHandle  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ClrScr . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ComputerHareplay . . . . . . . .	P Near	 000009D8 _TEXT	Length= 000000DB Public STDCALL
+  axe  . . . . . . . . . . . . .	Byte	 bp - 00000001
+  flag . . . . . . . . . . . . .	Byte	 bp - 00000002
+  Try  . . . . . . . . . . . . .	L Near	 000009E6 _TEXT	
+  IF_axe_2 . . . . . . . . . . .	L Near	 000009FC _TEXT	
+  IF_axe_3 . . . . . . . . . . .	L Near	 00000A09 _TEXT	
+  IF_axe_4 . . . . . . . . . . .	L Near	 00000A16 _TEXT	
+  IF_axe_5 . . . . . . . . . . .	L Near	 00000A20 _TEXT	
+  IF_axe_6 . . . . . . . . . . .	L Near	 00000A2A _TEXT	
+  IF_axe_7 . . . . . . . . . . .	L Near	 00000A35 _TEXT	
+  IF_axe_8 . . . . . . . . . . .	L Near	 00000A42 _TEXT	
+  Forward  . . . . . . . . . . .	L Near	 00000A4D _TEXT	
+  FindH  . . . . . . . . . . . .	L Near	 00000A5F _TEXT	
+  De . . . . . . . . . . . . . .	L Near	 00000A81 _TEXT	
+  T  . . . . . . . . . . . . . .	L Near	 00000AA9 _TEXT	
+  Bitir  . . . . . . . . . . . .	L Near	 00000AB1 _TEXT	
+ComputerWolfCalculate  . . . . .	P Near	 000008A1 _TEXT	Length= 00000137 Public STDCALL
+  T  . . . . . . . . . . . . . .	Byte	 bp + 00000008
+  Axis . . . . . . . . . . . . .	Byte	 bp + 0000000C
+  Fin  . . . . . . . . . . . . .	Byte	 bp - 00000001
+  E_2  . . . . . . . . . . . . .	L Near	 000008C0 _TEXT	
+  E_3  . . . . . . . . . . . . .	L Near	 000008CE _TEXT	
+  NextStep . . . . . . . . . . .	L Near	 000008D4 _TEXT	
+  Ax0  . . . . . . . . . . . . .	L Near	 000008E9 _TEXT	
+  Ax01 . . . . . . . . . . . . .	L Near	 00000909 _TEXT	
+  Fstep  . . . . . . . . . . . .	L Near	 0000092A _TEXT	
+  Find2  . . . . . . . . . . . .	L Near	 00000938 _TEXT	
+  Con  . . . . . . . . . . . . .	L Near	 0000097A _TEXT	
+  q  . . . . . . . . . . . . . .	L Near	 0000098C _TEXT	
+  Find3  . . . . . . . . . . . .	L Near	 00000990 _TEXT	
+  Don  . . . . . . . . . . . . .	L Near	 000009AF _TEXT	
+  Co . . . . . . . . . . . . . .	L Near	 000009B4 _TEXT	
+ComputerWolf . . . . . . . . . .	P Near	 000007FB _TEXT	Length= 000000A6 Public STDCALL
+  pivot  . . . . . . . . . . . .	Byte	 bp - 00000001
+  TryAgain . . . . . . . . . . .	L Near	 00000809 _TEXT	
+  Se_W . . . . . . . . . . . . .	L Near	 0000084D _TEXT	
+  ThirdW . . . . . . . . . . . .	L Near	 0000086D _TEXT	
+  Devam  . . . . . . . . . . . .	L Near	 00000892 _TEXT	
+  Clo  . . . . . . . . . . . . .	L Near	 0000089F _TEXT	
+CreateFileA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Crlf . . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Delay  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+DumpMem  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+DumpRegs . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ExitProcess  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FlushConsoleInputBuffer  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetCommandTail . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleCP . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleScreenBufferInfo . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetDateTime  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetLocalTime . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetMseconds  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetNumberOfConsoleInputEvents  .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetStdHandle . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetSystemTime  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetTickCount . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Gotoxy . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+IsDigit  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+PeekConsoleInputA  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+PlayHore . . . . . . . . . . . .	P Near	 00000349 _TEXT	Length= 0000019A Public STDCALL
+  I  . . . . . . . . . . . . . .	Byte	 bp + 00000008
+  move . . . . . . . . . . . . .	Byte	 bp - 00000001
+  differenceH  . . . . . . . . .	Byte	 bp - 00000002
+  differenceW  . . . . . . . . .	Byte	 bp - 00000003
+  SecondIf . . . . . . . . . . .	L Near	 00000374 _TEXT	
+  WhenTrue . . . . . . . . . . .	L Near	 0000038C _TEXT	
+  Continue . . . . . . . . . . .	L Near	 000003AF _TEXT	
+  Find . . . . . . . . . . . . .	L Near	 000003B9 _TEXT	
+  El_PartW . . . . . . . . . . .	L Near	 000003D6 _TEXT	
+  L  . . . . . . . . . . . . . .	L Near	 00000401 _TEXT	
+  CheckPath1 . . . . . . . . . .	L Near	 00000429 _TEXT	
+  CheckPath2 . . . . . . . . . .	L Near	 00000487 _TEXT	
+  whenPossible . . . . . . . . .	L Near	 000004BC _TEXT	
+PlayWolf . . . . . . . . . . . .	P Near	 000004E3 _TEXT	Length= 000001F5 Public STDCALL
+  Aim  . . . . . . . . . . . . .	Word	 bp + 00000008
+  I  . . . . . . . . . . . . . .	Byte	 bp - 00000001
+  differenceH  . . . . . . . . .	Byte	 bp - 00000002
+  differenceW  . . . . . . . . .	Byte	 bp - 00000003
+  temp . . . . . . . . . . . . .	Byte	 bp - 00000004
+  Pointer  . . . . . . . . . . .	DWord	 bp - 00000008
+  second_if  . . . . . . . . . .	L Near	 00000516 _TEXT	
+  third_if . . . . . . . . . . .	L Near	 00000526 _TEXT	
+  L_ELSE . . . . . . . . . . . .	L Near	 00000536 _TEXT	
+  nextW  . . . . . . . . . . . .	L Near	 00000559 _TEXT	
+  SecondIfW  . . . . . . . . . .	L Near	 00000573 _TEXT	
+  WhenTrueW  . . . . . . . . . .	L Near	 0000058B _TEXT	
+  Continue2  . . . . . . . . . .	L Near	 000005AE _TEXT	
+  Find . . . . . . . . . . . . .	L Near	 000005B8 _TEXT	
+  El_PartW . . . . . . . . . . .	L Near	 000005D5 _TEXT	
+  L  . . . . . . . . . . . . . .	L Near	 00000600 _TEXT	
+  CheckPath1 . . . . . . . . . .	L Near	 00000628 _TEXT	
+  CheckPath2 . . . . . . . . . .	L Near	 00000680 _TEXT	
+  whenPossible . . . . . . . . .	L Near	 000006AF _TEXT	
+Random32 . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+RandomRange  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Randomize  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadChar . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadConsoleA . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadConsoleInputA  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadFile . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadHex  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadInt  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadString . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleCursorPosition . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleScreenBufferSize . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleTextAttribute  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleTitleA . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleWindowInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetFilePointer . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetTextColor . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Sleep  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_compare  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_copy . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_length . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_trim . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Str_ucase  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SystemTimeToFileTime . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WaitMsg  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteBin . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteChar  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleA  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleOutputAttribute  . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleOutputCharacterA . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteDec . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteFile  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteHex . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteInt . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+emptyMap . . . . . . . . . . . .	P Near	 00000234 _TEXT	Length= 00000010 Public STDCALL
+main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000234 Public STDCALL
+  inputH . . . . . . . . . . . .	Byte	 bp - 00000001
+  inputW . . . . . . . . . . . .	Word	 bp - 00000004
+  GameLooopHound . . . . . . . .	L Near	 0000004A _TEXT	
+  LW . . . . . . . . . . . . . .	L Near	 0000006A _TEXT	
+  GameLooopHare  . . . . . . . .	L Near	 00000150 _TEXT	
+  LH . . . . . . . . . . . . . .	L Near	 000001B8 _TEXT	
+  Ex . . . . . . . . . . . . . .	L Near	 0000022D _TEXT	
+moveCursor . . . . . . . . . . .	P Near	 00000244 _TEXT	Length= 00000012 Public STDCALL
+  X  . . . . . . . . . . . . . .	Byte	 bp + 00000008
+  Y  . . . . . . . . . . . . . .	Byte	 bp + 0000000C
+putNodes . . . . . . . . . . . .	P Near	 00000256 _TEXT	Length= 00000047 Public STDCALL
+  L1 . . . . . . . . . . . . . .	L Near	 00000265 _TEXT	
+write_Node . . . . . . . . . . .	P Near	 0000029D _TEXT	Length= 000000AC Public STDCALL
+  X  . . . . . . . . . . . . . .	Byte	 bp + 00000008
+  Y  . . . . . . . . . . . . . .	Byte	 bp + 0000000C
+  T  . . . . . . . . . . . . . .	Byte	 bp + 00000010
+  Point  . . . . . . . . . . . .	DWord	 bp + 00000014
+  Hoore  . . . . . . . . . . . .	L Near	 000002C5 _TEXT	
+  Wolfs  . . . . . . . . . . . .	L Near	 000002E6 _TEXT	
+  EL_2 . . . . . . . . . . . . .	L Near	 00000329 _TEXT	
+  EL_3 . . . . . . . . . . . . .	L Near	 0000033C _TEXT	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000003h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+A2 . . . . . . . . . . . . . . .	Byte	 00000456 _DATA	
+B1 . . . . . . . . . . . . . . .	Byte	 0000044A _DATA	
+B2 . . . . . . . . . . . . . . .	Byte	 0000045A _DATA	
+B3 . . . . . . . . . . . . . . .	Byte	 0000046A _DATA	
+C1 . . . . . . . . . . . . . . .	Byte	 0000044E _DATA	
+C2 . . . . . . . . . . . . . . .	Byte	 0000045E _DATA	
+C3 . . . . . . . . . . . . . . .	Byte	 0000046E _DATA	
+CREATE_ALWAYS  . . . . . . . . .	Number	 00000002h   
+CREATE_NEW . . . . . . . . . . .	Number	 00000001h   
+CreateFile . . . . . . . . . . .	Text   	 CreateFileA
+D1 . . . . . . . . . . . . . . .	Byte	 00000452 _DATA	
+D2 . . . . . . . . . . . . . . .	Byte	 00000462 _DATA	
+D3 . . . . . . . . . . . . . . .	Byte	 00000472 _DATA	
+DO_NOT_SHARE . . . . . . . . . .	Number	 00000000h   
+E2 . . . . . . . . . . . . . . .	Byte	 00000466 _DATA	
+ENABLE_ECHO_INPUT  . . . . . . .	Number	 00000004h   
+ENABLE_LINE_INPUT  . . . . . . .	Number	 00000002h   
+ENABLE_MOUSE_INPUT . . . . . . .	Number	 00000010h   
+ENABLE_PROCESSED_INPUT . . . . .	Number	 00000001h   
+ENABLE_PROCESSED_OUTPUT  . . . .	Number	 00000001h   
+ENABLE_WINDOW_INPUT  . . . . . .	Number	 00000008h   
+ENABLE_WRAP_AT_EOL_OUTPUT  . . .	Number	 00000002h   
+Eror . . . . . . . . . . . . . .	Byte	 00000486 _DATA	
+FALSE  . . . . . . . . . . . . .	Number	 00000000h   
+FILE_APPEND_DATA . . . . . . . .	Number	 00000004h   
+FILE_ATTRIBUTE_ARCHIVE . . . . .	Number	 00000020h   
+FILE_ATTRIBUTE_COMPRESSED  . . .	Number	 00000800h   
+FILE_ATTRIBUTE_DEVICE  . . . . .	Number	 00000040h   
+FILE_ATTRIBUTE_DIRECTORY . . . .	Number	 00000010h   
+FILE_ATTRIBUTE_ENCRYPTED . . . .	Number	 00004000h   
+FILE_ATTRIBUTE_HIDDEN  . . . . .	Number	 00000002h   
+FILE_ATTRIBUTE_NORMAL  . . . . .	Number	 00000080h   
+FILE_ATTRIBUTE_NOT_CONTENT_INDEXED .	Number	 00002000h   
+FILE_ATTRIBUTE_OFFLINE . . . . .	Number	 00001000h   
+FILE_ATTRIBUTE_READONLY  . . . .	Number	 00000001h   
+FILE_ATTRIBUTE_REPARSE_POINT . .	Number	 00000400h   
+FILE_ATTRIBUTE_SPARSE_FILE . . .	Number	 00000200h   
+FILE_ATTRIBUTE_SYSTEM  . . . . .	Number	 00000004h   
+FILE_ATTRIBUTE_TEMPORARY . . . .	Number	 00000100h   
+FILE_BEGIN . . . . . . . . . . .	Number	 00000000h   
+FILE_CURRENT . . . . . . . . . .	Number	 00000001h   
+FILE_DELETE_CHILD  . . . . . . .	Number	 00000040h   
+FILE_END . . . . . . . . . . . .	Number	 00000002h   
+FILE_READ_DATA . . . . . . . . .	Number	 00000001h   
+FILE_SHARE_DELETE  . . . . . . .	Number	 00000004h   
+FILE_SHARE_READ  . . . . . . . .	Number	 00000001h   
+FILE_SHARE_WRITE . . . . . . . .	Number	 00000002h   
+FILE_WRITE_DATA  . . . . . . . .	Number	 00000002h   
+FOCUS_EVENT  . . . . . . . . . .	Number	 00000010h   
+GENERIC_ALL  . . . . . . . . . .	Number	 10000000h   
+GENERIC_EXECUTE  . . . . . . . .	Number	 20000000h   
+GENERIC_READ . . . . . . . . . .	Number	 -80000000h   
+GENERIC_WRITE  . . . . . . . . .	Number	 40000000h   
+Hp . . . . . . . . . . . . . . .	DWord	 00000476 _DATA	
+H  . . . . . . . . . . . . . . .	Byte	 0000043E _DATA	
+INVALID_HANDLE_VALUE . . . . . .	Number	 -00000001h   
+KEY_EVENT  . . . . . . . . . . .	Number	 00000001h   
+MENU_EVENT . . . . . . . . . . .	Number	 00000008h   
+MOUSE_EVENT  . . . . . . . . . .	Number	 00000002h   
+NULL . . . . . . . . . . . . . .	Number	 00000000h   
+OPEN_ALWAYS  . . . . . . . . . .	Number	 00000004h   
+OPEN_EXISTING  . . . . . . . . .	Number	 00000003h   
+PeekConsoleInput . . . . . . . .	Text   	 PeekConsoleInputA
+ReadConsoleInput . . . . . . . .	Text   	 ReadConsoleInputA
+ReadConsole  . . . . . . . . . .	Text   	 ReadConsoleA
+SPACE  . . . . . . . . . . . . .	Byte	 00000444 _DATA	
+STD_INPUT_HANDLE . . . . . . . .	Number	 -0000000Ah   
+STD_OUTPUT_HANDLE  . . . . . . .	Number	 -0000000Bh   
+SetConsoleTitle  . . . . . . . .	Text   	 SetConsoleTitleA
+Spa  . . . . . . . . . . . . . .	Byte	 00000686 _DATA	
+TRUE . . . . . . . . . . . . . .	Number	 00000001h   
+TRUNCATE_EXISTING  . . . . . . .	Number	 00000005h   
+W1p  . . . . . . . . . . . . . .	DWord	 0000047A _DATA	
+W1 . . . . . . . . . . . . . . .	Byte	 0000042F _DATA	
+W2p  . . . . . . . . . . . . . .	DWord	 0000047E _DATA	
+W2 . . . . . . . . . . . . . . .	Byte	 00000434 _DATA	
+W3p  . . . . . . . . . . . . . .	DWord	 00000482 _DATA	
+W3 . . . . . . . . . . . . . . .	Byte	 00000439 _DATA	
+WINDOW_BUFFER_SIZE_EVENT . . . .	Number	 00000004h   
+WriteConsoleOutputCharacter  . .	Text   	 WriteConsoleOutputCharacterA
+WriteConsole . . . . . . . . . .	Text   	 WriteConsoleA
+black  . . . . . . . . . . . . .	Number	 00000000h   
+blue . . . . . . . . . . . . . .	Number	 00000001h   
+brown  . . . . . . . . . . . . .	Number	 00000006h   
+check  . . . . . . . . . . . . .	Byte	 00000638 _DATA	
+cyan . . . . . . . . . . . . . .	Number	 00000003h   
+err1 . . . . . . . . . . . . . .	Byte	 000004DE _DATA	
+err2 . . . . . . . . . . . . . .	Byte	 00000537 _DATA	
+err3 . . . . . . . . . . . . . .	Byte	 0000054F _DATA	
+err4 . . . . . . . . . . . . . .	Byte	 00000567 _DATA	
+err5 . . . . . . . . . . . . . .	Byte	 00000588 _DATA	
+err6 . . . . . . . . . . . . . .	Byte	 000005B6 _DATA	
+exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
+gray . . . . . . . . . . . . . .	Number	 00000008h   
+green  . . . . . . . . . . . . .	Number	 00000002h   
+lightBlue  . . . . . . . . . . .	Number	 00000009h   
+lightCyan  . . . . . . . . . . .	Number	 0000000Bh   
+lightGray  . . . . . . . . . . .	Number	 00000007h   
+lightGreen . . . . . . . . . . .	Number	 0000000Ah   
+lightMagenta . . . . . . . . . .	Number	 0000000Dh   
+lightRed . . . . . . . . . . . .	Number	 0000000Ch   
+magenta  . . . . . . . . . . . .	Number	 00000005h   
+mov1 . . . . . . . . . . . . . .	Byte	 000005D2 _DATA	
+mov2 . . . . . . . . . . . . . .	Byte	 000005E5 _DATA	
+mov3 . . . . . . . . . . . . . .	Byte	 00000602 _DATA	
+mov4 . . . . . . . . . . . . . .	Byte	 0000061E _DATA	
+msgH . . . . . . . . . . . . . .	Byte	 00000487 _DATA	
+msgW . . . . . . . . . . . . . .	Byte	 000004B1 _DATA	
+okey . . . . . . . . . . . . . .	Byte	 000004F3 _DATA	
+red  . . . . . . . . . . . . . .	Number	 00000004h   
+start  . . . . . . . . . . . . .	Byte	 00000654 _DATA	
+str0 . . . . . . . . . . . . . .	Byte	 00000000 _DATA	
+str10  . . . . . . . . . . . . .	Byte	 0000025C _DATA	
+str11  . . . . . . . . . . . . .	Byte	 0000029B _DATA	
+str12  . . . . . . . . . . . . .	Byte	 000002D5 _DATA	
+str132 . . . . . . . . . . . . .	Byte	 00000349 _DATA	
+str13  . . . . . . . . . . . . .	Byte	 0000030F _DATA	
+str14  . . . . . . . . . . . . .	Byte	 00000383 _DATA	
+str15  . . . . . . . . . . . . .	Byte	 000003BB _DATA	
+str16  . . . . . . . . . . . . .	Byte	 000003F4 _DATA	
+str17  . . . . . . . . . . . . .	Byte	 0000042C _DATA	
+str1 . . . . . . . . . . . . . .	Byte	 00000030 _DATA	
+str2 . . . . . . . . . . . . . .	Byte	 0000004F _DATA	
+str3 . . . . . . . . . . . . . .	Byte	 00000087 _DATA	
+str4 . . . . . . . . . . . . . .	Byte	 000000C0 _DATA	
+str5 . . . . . . . . . . . . . .	Byte	 000000F8 _DATA	
+str6 . . . . . . . . . . . . . .	Byte	 00000131 _DATA	
+str71  . . . . . . . . . . . . .	Byte	 000001A3 _DATA	
+str7 . . . . . . . . . . . . . .	Byte	 0000016A _DATA	
+str8 . . . . . . . . . . . . . .	Byte	 000001DD _DATA	
+str9 . . . . . . . . . . . . . .	Byte	 0000021C _DATA	
+succesH  . . . . . . . . . . . .	Byte	 0000050D _DATA	
+succesW  . . . . . . . . . . . .	Byte	 00000521 _DATA	
+white  . . . . . . . . . . . . .	Number	 0000000Fh   
+yellow . . . . . . . . . . . . .	Number	 0000000Eh   
+
+	   0 Warnings
+	   0 Errors
