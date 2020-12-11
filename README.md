@@ -1,6 +1,6 @@
 # Hare-and-Hounds-Game-x86-Assembly
 
-Hare and Hounds game was implemented in x86 assemly with masm coplier and Irvine32LİB
+Hare and Hounds game was implemented in x86 assembly with masm coplier and Irvine32LİB
 
 You can play using .exe file or examine code (.asm file) 
 <br>
